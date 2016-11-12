@@ -1,0 +1,26 @@
+<template>
+  <section class="todoapp">
+  <header class="header">
+    <h1>Todos</h1>
+    <input type="text" class="new-todo" placeholder="what needs to be done?" autofocus="" 
+      value.bind="newTodo.description" keyup-enter.call="addTodo()">
+  </header>
+
+  <section class="main" show.bind="todos.length > 0">
+    <ul class="todo-list">
+      <li repeat.for="todo of todos" class="${todo.done ? 'completed' : ''}">
+        <div class="view">
+          <input type="checkbox" class="toggle" checked.bind="todo.done">
+          <label>${todo.description}</label>
+          <button class="destroy" click.trigger="removeTodo(todo)"></button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <footer class="footer" show.bind="todos.length > 0">
+    <span class="todo-count"><strong>${todos.length}</strong>${todos.length === 1 ? 'item': 'items'} left</span>
+  </footer>
+</section>
+
+</template>
