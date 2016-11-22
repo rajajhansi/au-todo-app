@@ -7,4 +7,3 @@ export class Todo {
     Object.assign(this, values);
   }
 }
-

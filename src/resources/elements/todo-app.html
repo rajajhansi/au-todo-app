@@ -1,14 +1,27 @@
-<template>
+<template>  
   <section class="todoapp">
   <header class="header">
     <h1>Todos</h1>
+    <div class="toolbar">
+      <a href="#" click.trigger="removeAllTodos()">
+        Remove All
+      </a> |
+      <a href="#"  click.trigger="removeDoneTodos()">
+        
+        Remove Completed
+      </a> |
+      <a href="#"  click.trigger="completeAllTodos()">
+        Complete All 
+      </a>
+    </div>
+    <br/>
     <input type="text" class="new-todo" placeholder="what needs to be done?" autofocus="" 
       value.bind="newTodo.description" keyup-enter.call="addTodo()">
   </header>
 
-  <section class="main" show.bind="todos.length > 0">
+  <section class="main" show.bind="filteredTodos.length > 0">
     <ul class="todo-list">
-      <li repeat.for="todo of todos" class="${todo.done ? 'completed' : ''}">
+      <li repeat.for="todo of filteredTodos" class="${todo.done ? 'completed' : ''}">
         <div class="view">
           <input type="checkbox" class="toggle" checked.bind="todo.done">
           <label>${todo.description}</label>
@@ -18,8 +31,19 @@
     </ul>
   </section>
 
-  <footer class="footer" show.bind="todos.length > 0">
-    <span class="todo-count"><strong>${todos.length}</strong>${todos.length === 1 ? 'item': 'items'} left</span>
+  <footer class="footer">
+    <span class="todo-count"><strong>${filteredTodos.length}</strong>${filteredTodos.length === 1 ? ' item ': ' items '} left</span>
+    <ul class="filters">
+      <li>
+        <a class="${filter == 'all' ? 'selected' : ''}" href="" click.trigger="filterTodo('all')">All</a>
+      </li>
+      <li>
+        <a class="${filter == 'active' ? 'selected' : ''}" href="" click.trigger="filterTodo('active')">Active</a>
+      </li>
+      <li>
+        <a class="${filter == 'completed' ? 'selected' : ''}" href="" click.trigger="filterTodo('completed')">Completed</a>
+      </li>
+    </ul>
   </footer>
 </section>
 

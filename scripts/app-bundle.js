@@ -26,13 +26,13 @@ define('todo.service',["require", "exports"], function (require, exports) {
             this.todos.push(todo);
             return this;
         };
-        TodoService.prototype.deleteTodoById = function (id) {
+        TodoService.prototype.deleteTodo = function (id) {
             this.todos = this.todos.filter(function (todo) { return todo.id !== id; });
             return this;
         };
-        TodoService.prototype.updateTodoById = function (id, values) {
+        TodoService.prototype.updateTodo = function (id, values) {
             if (values === void 0) { values = {}; }
-            var todo = this.getTodoById(id);
+            var todo = this.getTodo(id);
             if (!todo) {
                 return null;
             }
@@ -42,12 +42,32 @@ define('todo.service',["require", "exports"], function (require, exports) {
         TodoService.prototype.getAllTodos = function () {
             return this.todos;
         };
-        TodoService.prototype.getTodoById = function (id) {
+        TodoService.prototype.getTodo = function (id) {
             return this.todos.filter(function (todo) { return todo.id === id; }).pop();
         };
         TodoService.prototype.toggleTodoDone = function (todo) {
-            var updatedTodo = this.updateTodoById(todo.id, { done: !todo.done });
+            var updatedTodo = this.updateTodo(todo.id, { done: !todo.done });
             return updatedTodo;
+        };
+        TodoService.prototype.filterTodo = function (filterCriteria) {
+            switch (filterCriteria) {
+                case "active":
+                    return this.todos.filter(function (t) { return !t.done; });
+                case "completed":
+                    return this.todos.filter(function (t) { return t.done; });
+                case "all":
+                default:
+                    return this.todos;
+            }
+        };
+        TodoService.prototype.completeAllTodos = function () {
+            this.todos.forEach(function (t) { return t.done = true; });
+        };
+        TodoService.prototype.removeAllTodos = function () {
+            this.todos.splice(0);
+        };
+        TodoService.prototype.removeDoneTodos = function () {
+            this.todos = this.todos.filter(function (todo) { return !todo.done; });
         };
         return TodoService;
     }());
@@ -69,24 +89,38 @@ define('resources/elements/todo-app',["require", "exports", 'aurelia-framework',
         function TodoApp(todoService) {
             this.todoService = todoService;
             this.newTodo = new todo_1.Todo();
+            this.filter = "all";
+            this.filteredTodos = [];
         }
         TodoApp.prototype.addTodo = function () {
             this.todoService.addTodo(this.newTodo);
             this.newTodo = new todo_1.Todo();
+            this.filterTodo(this.filter);
         };
         TodoApp.prototype.toggleTodoDone = function (todo) {
             this.todoService.toggleTodoDone(todo);
+            this.filterTodo(this.filter);
         };
         TodoApp.prototype.removeTodo = function (todo) {
-            this.todoService.deleteTodoById(todo.id);
+            this.todoService.deleteTodo(todo.id);
+            this.filterTodo(this.filter);
         };
-        Object.defineProperty(TodoApp.prototype, "todos", {
-            get: function () {
-                return this.todoService.getAllTodos();
-            },
-            enumerable: true,
-            configurable: true
-        });
+        TodoApp.prototype.filterTodo = function (filterCriteria) {
+            this.filter = filterCriteria;
+            this.filteredTodos = this.todoService.filterTodo(filterCriteria);
+        };
+        TodoApp.prototype.completeAllTodos = function () {
+            this.todoService.completeAllTodos();
+            this.filterTodo(this.filter);
+        };
+        TodoApp.prototype.removeAllTodos = function () {
+            this.todoService.removeAllTodos();
+            this.filterTodo(this.filter);
+        };
+        TodoApp.prototype.removeDoneTodos = function () {
+            this.todoService.removeDoneTodos();
+            this.filterTodo(this.filter);
+        };
         TodoApp = __decorate([
             aurelia_framework_1.inject(todo_service_1.TodoService), 
             __metadata('design:paramtypes', [todo_service_1.TodoService])
@@ -187,6 +221,6 @@ define('resources/attributes/keyup-enter',["require", "exports", 'aurelia-framew
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./styles.css\"></require>\n  <todo-app></todo-app>\n</template>\n"; });
-define('text!styles.css', ['module'], function(module) { module.exports = "/* You can add global styles to this file, and also import other style files */\r\n\r\n@import url('../node_modules/todomvc-common/base.css');\r\n@import url('../node_modules/todomvc-app-css/index.css');\r\n\r\n.app-root-loader{\r\n  text-align: center;\r\n  padding: 30px;\r\n}"; });
-define('text!resources/elements/todo-app.html', ['module'], function(module) { module.exports = "<template>\n  <section class=\"todoapp\">\n  <header class=\"header\">\n    <h1>Todos</h1>\n    <input type=\"text\" class=\"new-todo\" placeholder=\"what needs to be done?\" autofocus=\"\" \n      value.bind=\"newTodo.description\" keyup-enter.call=\"addTodo()\">\n  </header>\n\n  <section class=\"main\" show.bind=\"todos.length > 0\">\n    <ul class=\"todo-list\">\n      <li repeat.for=\"todo of todos\" class=\"${todo.done ? 'completed' : ''}\">\n        <div class=\"view\">\n          <input type=\"checkbox\" class=\"toggle\" checked.bind=\"todo.done\">\n          <label>${todo.description}</label>\n          <button class=\"destroy\" click.trigger=\"removeTodo(todo)\"></button>\n        </div>\n      </li>\n    </ul>\n  </section>\n\n  <footer class=\"footer\" show.bind=\"todos.length > 0\">\n    <span class=\"todo-count\"><strong>${todos.length}</strong>${todos.length === 1 ? 'item': 'items'} left</span>\n  </footer>\n</section>\n\n</template>"; });
+define('text!styles.css', ['module'], function(module) { module.exports = "/* You can add global styles to this file, and also import other style files */\r\n\r\n@import url('../node_modules/todomvc-common/base.css');\r\n@import url('../node_modules/todomvc-app-css/index.css');\r\n\r\n.app-root-loader{\r\n  text-align: center;\r\n  padding: 30px;\r\n}\r\n\r\n.toolbar {\r\n\tcolor: #777;\r\n  /*background-color: lightslategray;*/\r\n\tpadding: 5px 10px;\r\n\theight: 20px;\r\n\ttext-align: center;\r\n\tborder-top: 1px solid #e6e6e6;\r\n  float: right;\r\n}"; });
+define('text!resources/elements/todo-app.html', ['module'], function(module) { module.exports = "<template>  \n  <section class=\"todoapp\">\n  <header class=\"header\">\n    <h1>Todos</h1>\n    <div class=\"toolbar\">\n      <a href=\"#\" click.trigger=\"removeAllTodos()\">\n        Remove All\n      </a> |\n      <a href=\"#\"  click.trigger=\"removeDoneTodos()\">\n        \n        Remove Completed\n      </a> |\n      <a href=\"#\"  click.trigger=\"completeAllTodos()\">\n        Complete All \n      </a>\n    </div>\n    <br/>\n    <input type=\"text\" class=\"new-todo\" placeholder=\"what needs to be done?\" autofocus=\"\" \n      value.bind=\"newTodo.description\" keyup-enter.call=\"addTodo()\">\n  </header>\n\n  <section class=\"main\" show.bind=\"filteredTodos.length > 0\">\n    <ul class=\"todo-list\">\n      <li repeat.for=\"todo of filteredTodos\" class=\"${todo.done ? 'completed' : ''}\">\n        <div class=\"view\">\n          <input type=\"checkbox\" class=\"toggle\" checked.bind=\"todo.done\">\n          <label>${todo.description}</label>\n          <button class=\"destroy\" click.trigger=\"removeTodo(todo)\"></button>\n        </div>\n      </li>\n    </ul>\n  </section>\n\n  <footer class=\"footer\">\n    <span class=\"todo-count\"><strong>${filteredTodos.length}</strong>${filteredTodos.length === 1 ? ' item ': ' items '} left</span>\n    <ul class=\"filters\">\n      <li>\n        <a class=\"${filter == 'all' ? 'selected' : ''}\" href=\"\" click.trigger=\"filterTodo('all')\">All</a>\n      </li>\n      <li>\n        <a class=\"${filter == 'active' ? 'selected' : ''}\" href=\"\" click.trigger=\"filterTodo('active')\">Active</a>\n      </li>\n      <li>\n        <a class=\"${filter == 'completed' ? 'selected' : ''}\" href=\"\" click.trigger=\"filterTodo('completed')\">Completed</a>\n      </li>\n    </ul>\n  </footer>\n</section>\n\n</template>"; });
 //# sourceMappingURL=app-bundle.js.map

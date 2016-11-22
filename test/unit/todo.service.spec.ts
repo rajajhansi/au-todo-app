@@ -40,9 +40,9 @@ describe('Service: Todo', () => {
       service.addTodo(todo1);
       service.addTodo(todo2);
       expect(service.getAllTodos()).toEqual([todo1, todo2]);
-      service.deleteTodoById(1);
+      service.deleteTodo(1);
       expect(service.getAllTodos()).toEqual([todo2]);
-      service.deleteTodoById(2);
+      service.deleteTodo(2);
       expect(service.getAllTodos()).toEqual([]);
     });
 
@@ -53,18 +53,18 @@ describe('Service: Todo', () => {
       service.addTodo(todo1);
       service.addTodo(todo2);
       expect(service.getAllTodos()).toEqual([todo1, todo2]);
-      service.deleteTodoById(3);
+      service.deleteTodo(3);
       expect(service.getAllTodos()).toEqual([todo1, todo2]);
     });
   });
 
-  describe('#updateTodoById(id, values)', () => {
+  describe('#updateTodo(id, values)', () => {
 
     it('should return todo with the corresponding id and updated data', () => {
       let service = container.get(TodoService);
       let todo = new Todo({description: 'Hello 1', done: false});
       service.addTodo(todo);
-      let updatedTodo = service.updateTodoById(1, {
+      let updatedTodo = service.updateTodo(1, {
         description: 'new description'
       });
       expect(updatedTodo.description).toEqual('new description');
@@ -74,7 +74,7 @@ describe('Service: Todo', () => {
       let service = container.get(TodoService);
       let todo = new Todo({description: 'Hello 1', done: false});
       service.addTodo(todo);
-      let updatedTodo = service.updateTodoById(2, {
+      let updatedTodo = service.updateTodo(2, {
         description: 'new description'
       });
       expect(updatedTodo).toEqual(null);
